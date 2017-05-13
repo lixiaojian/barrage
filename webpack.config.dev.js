@@ -7,7 +7,7 @@ module.exports = {
     devtool:'cheap-module-eval-source-map',
     entry:{
         barrage:[
-            './src/index.js',
+            './src/js/index.js',
             hotMiddlewareScript
         ],
         demo:[
@@ -16,7 +16,7 @@ module.exports = {
         ]
     },
     output:{
-        filename:'[name].js',
+        filename:'js/[name].js',
         publicPath:'/build/',
         path: __dirname + '/build/'
     },
@@ -28,6 +28,15 @@ module.exports = {
                     path.resolve(__dirname,'src')
                 ],
                 use:['babel-loader']
+            },
+            {
+                test: /\.less/,
+                use: [
+                    { loader:'style-loader', options: {"sourceMap":true}},
+                    { loader:'css-loader', options: {"sourceMap":true}},
+                    { loader:'postcss-loader', options: {"sourceMap":true}},
+                    { loader:'less-loader', options: {"sourceMap":true}}
+                ]
             }
         ]
     },

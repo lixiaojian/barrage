@@ -4,10 +4,16 @@
  * 播放器弹幕
  */
 
-class Circle {
-    constructor(radius) {
-        this.radius = radius;
-        Circle.circlesMade++;
+import '../style/index.less'
+
+/**
+ * @class Barrage 弹幕的类
+ *
+ * @param id 播放器的父容器id
+ */
+class Barrage {
+    constructor(config) {
+        this.id = config.id;
     };
     static draw(circle, canvas) {
         // Canvas绘制代码

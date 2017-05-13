@@ -5,17 +5,18 @@
 var path = require('path');
 var webpack = require('webpack');
 var CleanWebpackPlugin = require('clean-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
     entry:{
         barrage:[
-            './src/index.js'
+            './src/js/index.js'
         ]
     },
     output: {
         path: path.join(__dirname, 'build/'),
         publicPath:'/build/',
-        filename: '[name].min.js'
+        filename: 'js/[name].min.js'
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),
@@ -24,15 +25,16 @@ module.exports = {
                 'NODE_ENV': JSON.stringify('production')
             }
         }),
-        // new webpack.optimize.UglifyJsPlugin({
-        //     compress: {
-        //         warnings: false,
-        //         drop_console: false,
-        //     }
-        // }),
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                warnings: false,
+                drop_console: false,
+            }
+        }),
+        //css单独打包
+        new ExtractTextPlugin("css/[name].css"),
         new CleanWebpackPlugin(['build'],
             {
-                // root:'/full/project/path',
                 verbose: true,
                 dry: false
             }
@@ -43,11 +45,20 @@ module.exports = {
             {
                 test: /\.js$/,
                 loaders: ['babel-loader'],
-                include: path.join(__dirname, 'src')
+                include: path.join(__dirname, 'src/js')
+            },
+            {
+                test: /\.less$/,
+                use: ExtractTextPlugin.extract([
+                    'css-loader',
+                    'postcss-loader',
+                    { loader:'less-loader'}
+                ]),
+                include: path.join(__dirname, 'src/style')
             }
         ]
     },
     resolve:{
-        extensions:['.js']
+        extensions:['.js','.less']
     }
 };
