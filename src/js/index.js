@@ -194,6 +194,10 @@ class Barrage {
             this.barrageWapper.style.opacity = 0
         }
     }
+
+    /**
+     * 打开弹幕功能
+     */
     openBarrage(){
         if(!this.connection){
             const connection = io.connect(this.serverUrl, { 'reconnect': false })
