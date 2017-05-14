@@ -59,16 +59,13 @@ class Barrage {
         this.paddingBottom = paddingBottom
         this.paddingLeft = paddingLeft
         this.parentEle = document.getElementById(this.id)
+        //最后一弹幕显示的行数
+        this.currindex = 1
         if(!this.parentEle){
             //配置项中的id所在的dom节点不存在
             throw Error('id dom node for '+id+' does not exist!')
         }
-        //父节点的位置信息
-        let position = getPosition(this.parentEle)
-
-        //父节点的盒模型信息
-        let box = getBox(this.parentEle)
-        this.createBarrageParent(box)
+        this.createBarrageParent()
     };
 
     /**
@@ -79,6 +76,7 @@ class Barrage {
         bp.className = 'barrage'
         this.parentEle.appendChild(bp)
         this.setBarrageParentStyle(bp)
+        this.barrageWapper = bp;
     }
 
     /**
@@ -86,12 +84,21 @@ class Barrage {
      */
     setBarrageParentStyle(barrageParent){
         checkHTMLElement(barrageParent);
+        var {position} = getPosition(this.parentEle);
+        //如果父容器没有设置定位，就设置为relative
+        if(position !== 'fixed' && position !== 'position' && position !== 'relative'){
+            this.parentEle.style.position = 'relative'
+        }
         const video = this.parentEle.querySelector('video')
         if(!video){
             //没有找到视频的播放标签
             throw new Error('the video tag is not found')
         }
         let videoSize = getSize(video);
+        //播放器的宽
+        this.videoWidth = parseFloat(videoSize.width)
+        //播放器的高
+        this.videoHeight = parseFloat(videoSize.height)
         var top = 0,left=0,bottom=0,right=0;
         if(parseFloat(this.paddingTop)){
             top = parseFloat(unitConversion(this.paddingTop,video))
@@ -107,31 +114,56 @@ class Barrage {
         }
         //播放器父容器的box信息
         let box = getBox(this.parentEle)
-        let width = parseFloat(videoSize.width) - left - right;
-        let height = parseFloat(videoSize.height) - top -bottom;
-        let styleArr = ['position: absolute','z-index:100','width:'+width+'px','height:'+height+'px'];
-        if(top){
-            styleArr.push('top:'+top+'px')
+        console.log(box);
+        let width = parseFloat(videoSize.width) - left - right
+        let height = parseFloat(videoSize.height) - top -bottom
+        let styleArr = [`width:${width}px`,`height:${height}px`]
+        //top为自己的paddingtop + 父容器的 paddingtop + 父容器的 bordertop
+        if(top || parseFloat(box.paddingTop) || parseFloat(box.borderTopWidth)){
+            styleArr.push(`top:${top+parseFloat(box.paddingTop)+parseFloat(box.borderTopWidth)}px`)
         }
-        if(left){
-            styleArr.push('left:'+left+'px')
+        //算法同top
+        if(left || parseFloat(box.paddingLeft) || parseFloat(box.borderLeftWidth)){
+            styleArr.push(`left:${left+parseFloat(box.paddingLeft)+parseFloat(box.borderLeftWidth)}px`)
         }
         if(bottom){
-            styleArr.push('bottom:'+bottom+'px')
+            styleArr.push(`bottom:${bottom}px`)
         }
         if(right){
-            styleArr.push('right:'+right+'px')
-        }
-
-        if(!top && !bottom){
-            styleArr.push('top:0')
-        }
-        if(!left && !right){
-            styleArr.push('left:0')
+            styleArr.push(`right:${right}px`)
         }
         barrageParent.style.cssText = styleArr.join(';');
     }
 
+    /**
+     * 添加弹幕标签
+     * @param barrages
+     */
+    setBarrages(barrages = []){
+        barrages.map((item,index)=>{
+            const tag = document.createElement('div')
+            tag.className = 'barrage-tag'
+            tag.innerHTML = item.text
+            this.barrageWapper.appendChild(tag)
+            const top = this.currindex * 30
+            tag.style.top = top+'px'
+            //根据视频宽度设置弹幕的过度时间
+            const durationTime = parseInt(this.videoWidth / 50)
+            tag.style.transitionDuration = durationTime+'s'
+            this.currindex ++
+            if(top > (parseFloat(this.videoHeight) * 0.7)){
+                this.currindex = 1
+            }
+            //让内容开始移动
+            setTimeout(() =>{
+                tag.style.right = '200%';
+            },20);
+            //删除内容标签
+            setTimeout(() =>{
+                this.barrageWapper.removeChild(tag);
+            },durationTime*1000);
+        })
+    }
 }
 
 window.Barrage = Barrage;

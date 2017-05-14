@@ -1,4 +1,14 @@
 .barrage{
+  overflow: hidden;
   position: absolute;
-  transition: all 1s;
+  z-index: 100;
+
+  .barrage-tag{
+    position: absolute;
+    display: inline-block;
+    width: 100%;
+    right: 0;
+    transition: right 5s linear;
+    transform: translate(100%,0);
+  }
 }

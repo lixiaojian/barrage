@@ -5,3 +5,9 @@
 var bar = new Barrage({
     id:'bgvid'
 });
+
+document.getElementById('submit_link').onclick = function () {
+    var text = document.getElementById('text').value;
+
+    bar.setBarrages([{text:text}]);
+}
