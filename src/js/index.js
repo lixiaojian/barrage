@@ -38,6 +38,8 @@ const unitConversion = (unit,relative) => {
  * @param paddingBottom 到播放器下边界的距离
  * @param paddingLeft 到播放器左边界的距离
  *
+ * @param serverurl 获取弹幕的服务地址
+ *
  */
 class Barrage {
     constructor({
@@ -45,12 +47,17 @@ class Barrage {
                     paddingTop=0,
                     paddingRigt=0,
                     paddingBottom=0,
-                    paddingLeft=0
+                    paddingLeft=0,
+                    serverUrl
                 }) {
 
         if(id === undefined){
             //配置项的id不能为空
             throw Error('the config of id is required!')
+        }
+        if(!serverUrl){
+            //配置项的服务地址不能为空
+            throw Error('the config of serverUrl is required!')
         }
         //初始化参数
         this.id = id
@@ -59,6 +66,7 @@ class Barrage {
         this.paddingBottom = paddingBottom
         this.paddingLeft = paddingLeft
         this.parentEle = document.getElementById(this.id)
+        this.serverUrl = serverUrl
         //最后一弹幕显示的行数
         this.currindex = 1
         if(!this.parentEle){
@@ -66,6 +74,8 @@ class Barrage {
             throw Error('id dom node for '+id+' does not exist!')
         }
         this.createBarrageParent()
+
+        this.createConnect();
     };
 
     /**
@@ -114,7 +124,6 @@ class Barrage {
         }
         //播放器父容器的box信息
         let box = getBox(this.parentEle)
-        console.log(box);
         let width = parseFloat(videoSize.width) - left - right
         let height = parseFloat(videoSize.height) - top -bottom
         let styleArr = [`width:${width}px`,`height:${height}px`]
@@ -149,6 +158,7 @@ class Barrage {
             tag.style.top = top+'px'
             //根据视频宽度设置弹幕的过度时间
             const durationTime = parseInt(this.videoWidth / 50)
+            tag.style.WebkitTransitionDuration = durationTime+'s'
             tag.style.transitionDuration = durationTime+'s'
             this.currindex ++
             if(top > (parseFloat(this.videoHeight) * 0.7)){
@@ -163,6 +173,37 @@ class Barrage {
                 this.barrageWapper.removeChild(tag);
             },durationTime*1000);
         })
+    }
+
+    /**
+     * 创建socket.io的连接
+     * @param url
+     */
+    createConnect(){
+        const connection = io.connect(this.serverUrl, { 'reconnect': false });
+        this.connection = connection;
+        connection.on('connect', function (data) {
+            console.log('弹幕服务连接成功');
+        });
+        connection.on("error", function (error) {
+            console.log('弹幕服务连接失败');
+        });
+        connection.on("barrage", (message) => {
+            if(message && message.text){
+                this.setBarrages([{text:message.text}]);
+            }
+        })
+    }
+
+    /**
+     * 发送弹幕消息
+     */
+    sendBarrage(msg){
+        if(this.connection){
+            this.connection.emit('submit_barrage',{
+                text:msg
+            })
+        }
     }
 }
 

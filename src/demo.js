@@ -3,11 +3,13 @@
  */
 
 var bar = new Barrage({
-    id:'bgvid'
+    id:'bgvid',
+    serverUrl:'127.0.0.1:8091'
 });
 
 document.getElementById('submit_link').onclick = function () {
     var text = document.getElementById('text').value;
 
-    bar.setBarrages([{text:text}]);
+    // bar.setBarrages([{text:text}]);
+    bar.sendBarrage(text);
 }
