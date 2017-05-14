@@ -9,7 +9,19 @@ var bar = new Barrage({
 
 document.getElementById('submit_link').onclick = function () {
     var text = document.getElementById('text').value;
-
-    // bar.setBarrages([{text:text}]);
     bar.sendBarrage(text);
+}
+
+document.getElementById('toggle_barrage').onclick = function (e) {
+    var link = e.target;
+    var type = link.getAttribute('data-type');
+    if('open' === type){
+        bar.openBarrage();
+        link.setAttribute('data-type','close');
+        link.innerHTML = '关闭';
+    }else{
+        bar.closeBarrage();
+        link.setAttribute('data-type','open');
+        link.innerHTML = '开启';
+    }
 }

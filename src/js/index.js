@@ -74,8 +74,6 @@ class Barrage {
             throw Error('id dom node for '+id+' does not exist!')
         }
         this.createBarrageParent()
-
-        this.createConnect();
     };
 
     /**
@@ -93,7 +91,7 @@ class Barrage {
      * 设置弹幕父容器的样式
      */
     setBarrageParentStyle(barrageParent){
-        checkHTMLElement(barrageParent);
+        checkHTMLElement(barrageParent)
         var {position} = getPosition(this.parentEle);
         //如果父容器没有设置定位，就设置为relative
         if(position !== 'fixed' && position !== 'position' && position !== 'relative'){
@@ -104,7 +102,7 @@ class Barrage {
             //没有找到视频的播放标签
             throw new Error('the video tag is not found')
         }
-        let videoSize = getSize(video);
+        let videoSize = getSize(video)
         //播放器的宽
         this.videoWidth = parseFloat(videoSize.width)
         //播放器的高
@@ -141,7 +139,7 @@ class Barrage {
         if(right){
             styleArr.push(`right:${right}px`)
         }
-        barrageParent.style.cssText = styleArr.join(';');
+        barrageParent.style.cssText = styleArr.join(';')
     }
 
     /**
@@ -170,28 +168,8 @@ class Barrage {
             },20);
             //删除内容标签
             setTimeout(() =>{
-                this.barrageWapper.removeChild(tag);
-            },durationTime*1000);
-        })
-    }
-
-    /**
-     * 创建socket.io的连接
-     * @param url
-     */
-    createConnect(){
-        const connection = io.connect(this.serverUrl, { 'reconnect': false });
-        this.connection = connection;
-        connection.on('connect', function (data) {
-            console.log('弹幕服务连接成功');
-        });
-        connection.on("error", function (error) {
-            console.log('弹幕服务连接失败');
-        });
-        connection.on("barrage", (message) => {
-            if(message && message.text){
-                this.setBarrages([{text:message.text}]);
-            }
+                this.barrageWapper.removeChild(tag)
+            },durationTime*1000)
         })
     }
 
@@ -205,6 +183,35 @@ class Barrage {
             })
         }
     }
+
+    /**
+     * 关闭链接
+     */
+    closeBarrage(){
+        if(this.connection){
+            this.connection.disconnect()
+            this.connection = null
+            this.barrageWapper.style.opacity = 0
+        }
+    }
+    openBarrage(){
+        if(!this.connection){
+            const connection = io.connect(this.serverUrl, { 'reconnect': false })
+            this.connection = connection
+            connection.on('connect', function (data) {
+                console.log('弹幕服务连接成功')
+            });
+            connection.on("error", function (error) {
+                console.log('弹幕服务连接失败')
+            })
+            connection.on("barrage", (message) => {
+                if(message && message.text){
+                    this.setBarrages([{text:message.text}])
+                }
+            })
+            this.barrageWapper.style.opacity = 1
+        }
+    }
 }
 
-window.Barrage = Barrage;
+window.Barrage = Barrage
